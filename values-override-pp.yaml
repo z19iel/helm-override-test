@@ -1,0 +1,134 @@
+.default-values: &default-values
+  replicaCount: 1
+  env:
+    SPRING_PROFILES_ACTIVE: prep
+
+global:
+  repository: registry-eu.subsidia.org/ibuy
+  image:
+    tag: prep-latest
+  domain: 
+    value: pp.dktapp.cloud
+    suffixWithReleaseName: false
+  releaseName:
+
+
+firstdata-referential-api:
+  <<: *default-values
+  app:
+    name: firstdata-referential-api
+
+firstdata-tank-api:
+  <<: *default-values
+  app:
+    name: firstdata-tank-api
+  # When setting the service image, we must specify the tag also
+  image:
+    repository: registry-eu.subsidia.org/ibuy/firstdata-tank-management-api
+    tag: prep-latest
+
+sportycoins-api:
+  <<: *default-values
+  app:
+    name: sportycoins-api
+
+sportycoins-psp-firstdata:
+  <<: *default-values
+  app:
+    name: sportycoins-psp-firstdata
+
+sportycoins-psp-firstdata-clientref:
+  <<: *default-values
+  app:
+    name: sportycoins-psp-firstdata-clientref
+
+sportycoins-referential-api:
+  <<: *default-values
+  app:
+    name: sportycoins-referential-api
+
+sportycoins-tank-api:
+  <<: *default-values
+  app:
+    name: sportycoins-tank-api
+
+sportycoins-treatment:
+  <<: *default-values
+  app:
+    name: sportycoins-treatment
+
+
+firstdata-treatment-api:
+  <<: *default-values
+  app:
+    name: firstdata-treatment-api
+
+sportycoins-support-admin:
+  <<: *default-values
+  app:
+    name: sportycoins-support-admin
+  rbac:
+    enabled: true
+
+sportycoins-admin:
+  <<: *default-values
+  app:
+    name: sportycoins-admin
+    subapp:
+      - name: conf
+        image: sportycoins-admin
+        paths: [/]
+        config: |
+          "const config = (() => {
+          return {
+          NODE_ENV: 'prep',
+
+          VUE_APP_FEDID_URL: 'https://preprod.idpdecathlon.oxylane.com/as/authorization.oauth2',
+          VUE_APP_FEDID_USER_INFO_URL: 'https://preprod.idpdecathlon.oxylane.com/idp/userinfo.openid',
+          VUE_APP_FEDID_CLIENT_ID: 'C10f4627d48d0660701e7b5fa2bce8f56ed9458bd',
+          VUE_APP_FEDID_REDIRECT_URL: 'https://sportycoins-admin.pp.dktapp.cloud',
+
+          VUE_APP_SP_REF_BASE_URL: 'https://sportycoins-referential-api.pp.dktapp.cloud',
+          VUE_APP_SP_REF_PATH: '/api/v1/sportycoins-ref',
+          VUE_APP_SP_REF_TIMEOUT: '10000',
+
+          VUE_APP_SP_TANK_MANAGEMENT_URL: 'https://sportycoins-tank.pp.dktapp.cloud',
+          VUE_APP_SP_TANK_MANAGEMENT_PATH: '/api/v1/sportycoins-ref',
+          VUE_APP_SP_TANK_MANAGEMENT_TIMEOUT: '10000',
+
+          VUE_APP_REST_COUNTRY_BASE_URL: 'https://restcountries.eu',
+          VUE_APP_REST_COUNTRY_PATH: '/rest/v2/all',
+          VUE_APP_REST_COUNTRY_TIMEOUT: '10000',
+
+          VUE_APP_CURRENCY_BASE_URL: 'https://api.frankfurter.app',
+          VUE_APP_CURRENCY_PATH: '/currencies',
+          VUE_APP_CURRENCY_TIMEOUT: '10000'
+          }
+          })()"
+      - name: tank
+        image: sportycoins-tank-management
+        paths: [/tank]
+        config: |
+          "const config = (() => {
+             return {
+               NODE_ENV: 'prep',
+
+               VUE_APP_FD_TANK_BASE_URL: 'https://firstdata-tank-api.pp.dktapp.cloud',
+               VUE_APP_FD_TANK_PATH: '/api/v1/input_files',
+               VUE_APP_FD_TANK_TIMEOUT: '10000',
+
+               VUE_APP_SP_ADMIN: 'https://sportycoins-admin.pp.dktapp.cloud/'
+             }
+           })()"
+redis:
+  redisPort: 6379
+  usePassword: true
+  fullnameOverride: sportycoins-redis
+  serviceAccount:
+    create: true
+    name: sportycoins-redis
+  cluster:
+    enabled: false
+  global:
+    redis:
+      password: jA6kPwUNVLPM2dT72pwUbdtN
